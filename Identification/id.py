@@ -1,13 +1,14 @@
-CSV_FILE = "id.csv"
+CSV_FILE = "id.csv"  # This is for further testing
 import csv
 import os.path
 
-class Identification():
+
+class Identification:
     @classmethod
     def add_user(cls, id, password):
         file_exists = os.path.isfile(CSV_FILE)
         with open(CSV_FILE, "a+") as file:
-            writer = csv.DictWriter(file, fieldnames=["id","password"])
+            writer = csv.DictWriter(file, fieldnames=["id", "password"])
             if not file_exists:
                 writer.writeheader()
             new_data = {"id": id, "password": password}
@@ -25,7 +26,7 @@ class Identification():
         except FileNotFoundError:
             print("No users registered")
             return False
-    
+
     @classmethod
     def get_user(cls):
         try:
@@ -34,8 +35,8 @@ class Identification():
                 return [i for i in reader]
         except FileNotFoundError:
             print("No users registered")
-            return 
-        
+            return
+
     @classmethod
     def remove_user(cls, id, password):
         try:
@@ -47,13 +48,14 @@ class Identification():
                     reader = csv.DictReader(f)
                     new_data = [i for i in reader if i["id"] != id]
 
-                    with open(CSV_FILE, "w") as file: 
+                    with open(CSV_FILE, "w") as file:
 
                         writer = csv.DictWriter(file, fieldnames=["id", "password"])
                         writer.writeheader()
 
                         for row in new_data:
                             writer.writerow(row)
+                        print("Successfully removed user! ")
 
             else:
                 print("Invalid username or password")
