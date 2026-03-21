@@ -1,6 +1,8 @@
 CSV_FILE = "id.csv"  # This is for further testing
+DB_FILE = "finance.db"
 import csv
 import os.path
+import os
 
 
 class Identification:
@@ -39,26 +41,23 @@ class Identification:
 
     @classmethod
     def remove_user(cls, id, password):
-        try:
+        file_exists_csv = os.path.isfile(CSV_FILE)
+        file_exists_db = os.path.isfile(DB_FILE)
 
+        print("Please identify yourself before.")
+        while True:
             if cls.check_user(id, password):
-
-                with open(CSV_FILE, "r") as f:
-
-                    reader = csv.DictReader(f)
-                    new_data = [i for i in reader if i["id"] != id]
-
-                    with open(CSV_FILE, "w") as file:
-
-                        writer = csv.DictWriter(file, fieldnames=["id", "password"])
-                        writer.writeheader()
-
-                        for row in new_data:
-                            writer.writerow(row)
-                        print("Successfully removed user! ")
-
+                match input("Do you really want to delete the user and all the data? "):
+                    case "yes":
+                        if file_exists_csv:
+                            os.remove("id.csv")
+                        if file_exists_db:
+                            os.remove(DB_FILE)
+                        print("successfully deleted all the data")
+                        break
+                    case "no":
+                        return
+                    case _:
+                        continue
             else:
-                print("Invalid username or password")
-
-        except FileNotFoundError:
-            print("File does not exist")
+                break

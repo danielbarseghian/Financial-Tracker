@@ -1,9 +1,11 @@
+DB_FILE = "finance.db"
 import sqlite3
 import sys
 from Identification.id import Identification
 from random import randint
 from datetime import date
 from colorama import Fore, Style, init
+from tabulate import tabulate
 
 init()
 
@@ -21,16 +23,15 @@ def get_date():
 
 
 def login():
-    print(Fore.CYAN + "╔══════════════════════════╗")
-    print("║        LOGIN MENU        ║")
-    print("╠══════════════════════════╣")
-    print("║  " + Fore.WHITE + "[1] Login to account" + Fore.CYAN + "    ║")
-    print("║  " + Fore.WHITE + "[2] Create an account" + Fore.CYAN + "   ║")
-    print("║  " + Fore.WHITE + "[3] Delete an account" + Fore.CYAN + "   ║")
-    print("║  " + Fore.WHITE + "[4] Quit" + Fore.CYAN + "                ║")
-    print("╚══════════════════════════╝" + Style.RESET_ALL)
-
     while True:
+        print(Fore.CYAN + "╔══════════════════════════╗")
+        print("║        LOGIN MENU        ║")
+        print("╠══════════════════════════╣")
+        print("║  " + Fore.WHITE + "[1] Login to account" + Fore.CYAN + "    ║")
+        print("║  " + Fore.WHITE + "[2] Create an account" + Fore.CYAN + "   ║")
+        print("║  " + Fore.WHITE + "[3] Delete an account" + Fore.CYAN + "   ║")
+        print("║  " + Fore.WHITE + "[4] Quit" + Fore.CYAN + "                ║")
+        print("╚══════════════════════════╝" + Style.RESET_ALL)
         choice = input("  Choose (1-4): ")
 
         match choice:
@@ -42,20 +43,24 @@ def login():
                     print("Account not existante")
                     continue
             case "2":
-                while True:
-                    id = input("name: ")
-                    password = input("password: ")
-                    if not Identification.check_user(
-                        id, password
-                    ):  # If user none existante
-                        Identification.add_user(id, password)
-                        return id
-                    else:
-                        print("User already existante")
+                if Identification.get_user() is None or len(Identification.get_user()) == 0:
+                    while True:
+                        id = input("name: ")
+                        password = input("password: ")
+                        if not Identification.check_user(
+                            id, password
+                        ):  # If user none existante
+                            Identification.add_user(id, password)
+                            return id
+                        else:
+                            print("User already existante")
+                else:
+                    print("An account is already created please delete it to create a new one")
+                    continue                    
             case "3":
                 Identification.remove_user(input("name: "), input("password: "))
                 continue
-            case "4":
+            case "4" | "quit":
                 sys.exit(0)
             case _:
                 print("Please enter a number from 1 to 4")
@@ -64,16 +69,8 @@ def login():
 
 def main():
     login()
-    print(Fore.MAGENTA + "╔══════════════════════════╗")
-    print("║        LOGIN MENU        ║")
-    print("╠══════════════════════════╣")
-    print("║  " + Fore.WHITE + "[1] Add transaction" + Fore.MAGENTA + "     ║")
-    print("║  " + Fore.WHITE + "[2] Show transactions" + Fore.MAGENTA + "   ║")
-    print("║  " + Fore.WHITE + "[3] Delete a trasaction" + Fore.MAGENTA + " ║")
-    print("║  " + Fore.WHITE + "[4] Quit" + Fore.MAGENTA + "                ║")
-    print("╚══════════════════════════╝" + Style.RESET_ALL)
 
-    con = sqlite3.connect("finance.db")
+    con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
 
     cur.execute(
@@ -82,38 +79,47 @@ def main():
         name        TEXT,
         date        TEXT,
         description TEXT,
-        type        TEXT,
         amount      REAL
     )"""
     )
 
     while True:
+        print(Fore.MAGENTA + "╔══════════════════════════╗")
+        print("║        LOGIN MENU        ║")
+        print("╠══════════════════════════╣")
+        print("║  " + Fore.WHITE + "[1] Add transaction" + Fore.MAGENTA + "     ║")
+        print("║  " + Fore.WHITE + "[2] Show transactions" + Fore.MAGENTA + "   ║")
+        print("║  " + Fore.WHITE + "[3] Delete a trasaction" + Fore.MAGENTA + " ║")
+        print("║  " + Fore.WHITE + "[4] Quit" + Fore.MAGENTA + "                ║")
+        print("╚══════════════════════════╝" + Style.RESET_ALL)
         ch = input("Choose (1-4): ").strip().lower()
         match ch:
 
             case "1" | "delete":
 
                 cur.execute(
-                    """INSERT OR IGNORE INTO transactions VALUES(?, ?, ?, ?, ?, ?)""",
+                    """INSERT OR IGNORE INTO transactions VALUES(?, ?, ?, ?, ?)""",
                     (
                         generate_random(10),
                         input("What is the name of the pushace? "),
                         get_date(),
                         input("Short description of the pushace. "),
-                        input("What type of pushace was this? "),
                         input("How much was this transaction? "),
                     ),
                 )
 
             case "2" | "show":
 
-                for row in cur.execute("""SELECT * FROM transactions"""):
-                    print(row)
+                content = cur.execute("""SELECT * FROM transactions""")
+                headers = [i[0] for i in cur.description]
+                print(tabulate(content, headers, tablefmt="grid"))   
+                input("Press enter to continue :")                 
 
             case "3" | "delete":
 
                 d = input("What do you want to delete? ")
                 cur.execute("DELETE FROM transactions WHERE name = ?", (d,))
+                print("succesfully deleted the transaction")
 
             case "4" | "quit":
 
