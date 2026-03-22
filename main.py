@@ -58,6 +58,7 @@ def login():
                     print("An account is already created please delete it to create a new one")
                     continue                    
             case "3":
+                print("Please identify yourself before.")
                 Identification.remove_user(input("name: "), input("password: "))
                 continue
             case "4" | "quit":

@@ -36,7 +36,6 @@ class Identification:
                 reader = csv.DictReader(file)
                 return [i for i in reader]
         except FileNotFoundError:
-            print("No users registered")
             return
 
     @classmethod
@@ -44,7 +43,6 @@ class Identification:
         file_exists_csv = os.path.isfile(CSV_FILE)
         file_exists_db = os.path.isfile(DB_FILE)
 
-        print("Please identify yourself before.")
         while True:
             if cls.check_user(id, password):
                 match input("Do you really want to delete the user and all the data? "):
